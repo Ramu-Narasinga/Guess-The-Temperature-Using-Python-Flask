@@ -1,5 +1,5 @@
 import sqlite3
-from flask import Flask, render_template, request, url_for, flash, redirect
+from flask import Flask, render_template, request, flash
 from werkzeug.exceptions import abort
 import pandas
 import csv
@@ -37,20 +37,25 @@ def compareTemperatures():
   with open('temperature.csv', newline='') as csvfile:
     reader = csv.DictReader(csvfile)
     foundRowInCsv = [row for row in reader if row['dt'] == request.form['date']]
-    actualTemp = [foundRowInCsv[0]['dt'], foundRowInCsv[0]['dt_iso'], foundRowInCsv[0]['temp'] ]
 
-    print("actual temp", actualTemp[2], "guessTemp:", request.form['guess-temperature'])
-    save_user_guess(request.form['guess-temperature'], actualTemp[2], foundRowInCsv[0]['dt'])
+    # print("foundRowInCsv", foundRowInCsv)
 
-    guessedTemp = request.form['guess-temperature']
+    foundRowInCsvAsArray = [foundRowInCsv[0]['dt'], foundRowInCsv[0]['dt_iso'], foundRowInCsv[0]['temp'] ]
 
-    if guessedTemp == actualTemp[2]:
+    save_user_guess(request.form['guess-temperature'], foundRowInCsvAsArray[2], foundRowInCsv[0]['dt'])
+
+    guessedTemp = float(request.form['guess-temperature'])
+    actualTemp = float(foundRowInCsvAsArray[2])
+
+    # print("guessedTemp", guessedTemp, "actualTemp:", actualTemp)
+
+    if guessedTemp == actualTemp:
       flash('You guessed it correctly, Congratulations. You won!')
-    
-    if guessedTemp < actualTemp[2]:
+    elif guessedTemp < actualTemp:
+      # print("Found that guessedTemp is LOWER than actualTemp")
       flash('You guessed lower value, increase value')
-    
-    if guessedTemp > actualTemp[2]:
+    else:
+      # print("Found that guessedTemp is HGIHER than actualTemp")
       flash('You guessed higher value, decrease value')
 
-  return render_template('index.html', randomDate=actualTemp)
+  return render_template('index.html', randomDate=foundRowInCsvAsArray)
