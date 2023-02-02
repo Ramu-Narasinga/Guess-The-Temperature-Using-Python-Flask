@@ -2,26 +2,27 @@
 
 {% block content %}
     <h1>{% block title %} Hi, welcome to 'Guess the temperature' game {% endblock %}</h1>
-    <!-- {% for post in posts %}
-        <a href="{{ url_for('post', post_id=post['id']) }}">
-            <h2>{{ post['title'] }}</h2>
-        </a>
-        <span class="badge badge-primary">{{ post['created'] }}</span>
-        <a href="{{ url_for('edit', id=post['id']) }}">
-            <span class="badge badge-warning">Edit</span>
-        </a>
-        <hr>
-    {% endfor %} -->
     <div>
-      <div>Can you guess the temperate on this date: {{ randomDate }}</div>
+      <div>
+        
+        Can you guess the temperate on this date: {{ randomDate[1] }}
+
+        <a href="/">Change Date</a>
+
+      </div>
     </div>
     
     <form method="post" action="/result">
       <div class="form-group">
           <label for="guess-temperature">Enter your guessed temperature</label>
-          <input type="text" name="guess-temperature"
+          <input type="number" name="guess-temperature"
                  placeholder="Enter temperature" class="form-control"
-                 value="{{ request.form['guess-temperature'] }}"></input>
+                 value="{{ request.form['guess-temperature'] }}" step="any"></input>
+          <input 
+              type="text" 
+              hidden="true" 
+              name="date"
+              value="{{ randomDate[0] }}"></input>
       </div>
   
       <div class="form-group">

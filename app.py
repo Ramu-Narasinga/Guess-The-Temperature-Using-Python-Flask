@@ -2,7 +2,8 @@ import sqlite3
 from flask import Flask, render_template, request, url_for, flash, redirect
 from werkzeug.exceptions import abort
 import pandas
-from faker import Faker
+import csv
+import random
 
 result = pandas.read_csv('temperature.csv')
 
@@ -16,27 +17,39 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-def get_post(post_id):
-    conn = get_db_connection()
-    post = conn.execute('SELECT * FROM posts WHERE id = ?',
-                        (post_id,)).fetchone()
-    conn.close()
-    if post is None:
-        abort(404)
-    return post
-
 @app.route('/')
 def index():
-    fake = Faker()
-    # used the stackoverflow answer to generate random date: https://stackoverflow.com/questions/553303/generate-a-random-date-between-two-other-dates
-    randomDate = fake.date_time_between(start_date='-30y', end_date='now')
-    return render_template('index.html', randomDate=randomDate)
+    with open('temperature.csv') as f:
+      reader = csv.reader(f)
+      chosen_row = random.choice(list(reader))
+      print(chosen_row)
+    return render_template('index.html', randomDate=chosen_row)
+
+def save_user_guess(guessed_temp, actual_temp, dt):
+  conn = get_db_connection()
+  conn.execute('INSERT INTO user_guesses (guessed_temp, actual_temp, dt) VALUES (?, ?, ?)',
+              (guessed_temp, actual_temp, dt))
+  conn.commit()
+  conn.close()
 
 @app.route('/result', methods=('GET', 'POST'))
 def compareTemperatures():
-  print(request.form['guess-temperature'])
-  flash('Flash TITS')
-  return redirect(url_for('index'))
+  # print(request.form['guess-temperature'], "date::", request.form['date'])
+  with open('temperature.csv', newline='') as csvfile:
+    reader = csv.DictReader(csvfile)
+    foundRowInCsv = [row for row in reader if row['dt'] == request.form['date']]
+    actualTemp = [foundRowInCsv[0]['dt'], foundRowInCsv[0]['dt_iso'], foundRowInCsv[0]['temp'] ]
+
+    print("found temp", actualTemp)
+    if actualTemp[2] == request.form['guess-temperature']:
+      flash('You guessed it correctly')
+    elif request.form['guess-temperature'] < actualTemp[2]:
+      flash('You guessed lower value, increase value')
+    elif request.form['guess-temperature'] > actualTemp[2]:
+      flash('You guessed higher value, decrease value')
+
+    save_user_guess(request.form['guess-temperature'], actualTemp[2], foundRowInCsv[0]['dt'])
+  return render_template('index.html', randomDate=actualTemp)
 
 @app.route('/<int:post_id>')
 def post(post_id):
