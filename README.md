@@ -1,8 +1,5 @@
 # Guess-The-Temperature
 
-Pending tasks:
-1. Reading the correct csv file
-2. finding the row based on timestamp and get the actual temperature and compare
-3. Finding a way to show interesting message (mostly it is gonna be a hint: go lower, go higher, way too lower, way too higher)
-4. storing the user responses in sqllite
-5. Removing the posts related code and files
+A simple web application built using flask framework that lets a user guess the temperature and provide feedback to go higher or lower until there is a match.
+
+A really good tutorial about flask with examples: https://www.digitalocean.com/community/tutorials/how-to-make-a-web-application-using-flask-in-python-3
