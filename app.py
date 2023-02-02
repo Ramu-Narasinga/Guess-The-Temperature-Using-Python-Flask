@@ -1,6 +1,12 @@
 import sqlite3
 from flask import Flask, render_template, request, url_for, flash, redirect
 from werkzeug.exceptions import abort
+import pandas
+from faker import Faker
+
+result = pandas.read_csv('temperature.csv')
+
+print(result)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Q#qwe121dvj)sndh'
@@ -21,10 +27,16 @@ def get_post(post_id):
 
 @app.route('/')
 def index():
-    conn = get_db_connection()
-    posts = conn.execute('SELECT * FROM posts').fetchall()
-    conn.close()
-    return render_template('index.html', posts=posts)
+    fake = Faker()
+    # used the stackoverflow answer to generate random date: https://stackoverflow.com/questions/553303/generate-a-random-date-between-two-other-dates
+    randomDate = fake.date_time_between(start_date='-30y', end_date='now')
+    return render_template('index.html', randomDate=randomDate)
+
+@app.route('/result', methods=('GET', 'POST'))
+def compareTemperatures():
+  print(request.form['guess-temperature'])
+  flash('Flash TITS')
+  return redirect(url_for('index'))
 
 @app.route('/<int:post_id>')
 def post(post_id):
